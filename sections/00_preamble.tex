@@ -1,0 +1,87 @@
+% \title{Finding Morton-Like Layouts for Multi-Dimensional Arrays Using Evolutionary Algorithms}
+\title{Using Evolutionary Algorithms to Find Cache-Friendly Generalized Morton Layouts for Arrays}
+
+
+\author{Stephen Nicholas Swatman}
+\orcid{0000-0002-3747-3229}
+\affiliation{%
+  \institution{University of Amsterdam}
+  \city{Amsterdam}
+  \country{The Netherlands}
+}
+\additionalaffiliation{%
+    \institution{CERN}
+    \city{Geneva}
+    \country{Switzerland}
+}
+\email{s.n.swatman@uva.nl}
+
+\author{Ana-Lucia Varbanescu}
+\orcid{0000-0002-4932-1900}
+\affiliation{%
+  \institution{University of Twente}
+  \city{Enschede}
+  \country{The Netherlands}
+}
+\email{a.l.varbanescu@utwente.nl}
+
+\author{Andy D. Pimentel}
+\orcid{0000-0002-2043-4469}
+\affiliation{%
+  \institution{University of Amsterdam}
+  \city{Amsterdam}
+  \country{The Netherlands}
+}
+\email{a.d.pimentel@uva.nl}
+
+\author{Andreas Salzburger}
+\orcid{0000-0001-6004-3510}
+\affiliation{%
+    \institution{CERN}
+    \city{Geneva}
+    \country{Switzerland}
+}
+\email{andreas.salzburger@cern.ch}
+
+\author{Attila Krasznahorkay}
+\orcid{0000-0002-6468-1381}
+\affiliation{%
+    \institution{CERN}
+    \city{Geneva}
+    \country{Switzerland}
+}
+\email{attila.krasznahorkay@cern.ch}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10011007.10010940.10011003.10011002</concept_id>
+<concept_desc>Software and its engineering~Software performance</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002950.10003624.10003625.10003630</concept_id>
+<concept_desc>Mathematics of computing~Combinatorial optimization</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002951.10002952.10002971.10003451</concept_id>
+<concept_desc>Information systems~Data layout</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Software performance}
+\ccsdesc[500]{Mathematics of computing~Combinatorial optimization}
+\ccsdesc[500]{Information systems~Data layout}
+
+\keywords{Morton curve, Z-order curve, space-filling curves, array layout, multi-dimensional data, evolutionary algorithms, caching, locality}
+
+\begin{abstract}
+The layout of multi-dimensional data can have a significant impact on the efficacy of hardware caches and, by extension, the performance of applications. Common multi-dimensional layouts include the canonical row-major and column-major layouts as well as the Morton curve layout. In this paper, we describe how the Morton layout can be generalized to a very large family of multi-dimensional data layouts with widely varying performance characteristics. We posit that this design space can be efficiently explored using a combinatorial evolutionary methodology based on genetic algorithms. To this end, we propose a chromosomal representation for such layouts as well as a methodology for estimating the fitness of array layouts using cache simulation. We show that our fitness function correlates to kernel running time in real hardware, and that our evolutionary strategy allows us to find candidates with favorable simulated cache properties in four out of the eight real-world applications under consideration in a small number of generations. Finally, we demonstrate that the array layouts found using our evolutionary method perform well not only in simulated environments but that they can effect significant performance gains---up to a factor ten in extreme cases---in real hardware.
+\end{abstract}
+
+\maketitle
+
+\renewcommand{\shortauthors}{Stephen Nicholas Swatman, Ana-Lucia Varbanescu, et al.}

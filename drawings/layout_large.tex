@@ -1,0 +1,60 @@
+\documentclass[crop,tikz]{standalone}
+\input{tikzcommon}
+\input{palette}
+\begin{document}
+\begin{tikzpicture}[drawing layout large]
+    \foreach \x in {0,...,7} {
+        \foreach \y in {0,...,7} {
+            \node (p\x\y) at (\x,\y) {};
+        }
+    }
+
+    \def\bits{{\layout}}
+
+    \foreach \x in {0,...,62} {
+        \pgfmathtruncatemacro{\y}{\x + 1}
+
+        \pgfmathtruncatemacro{\ox}{0}
+        \pgfmathtruncatemacro{\oy}{0}
+        \pgfmathtruncatemacro{\obx}{0}
+        \pgfmathtruncatemacro{\oby}{0}
+
+        \foreach \b in {0,1,2,3,4,5} {
+            \pgfmathtruncatemacro{\v}{\bits[\b]}
+            \pgfmathtruncatemacro{\w}{mod(\x / pow(2, \b), 2)}
+
+            \pgfmathtruncatemacro{\ox}{ifthenelse(\v==0,\ox+\w*pow(2,\obx),\ox)}
+            \xdef\ox{\ox}
+            \pgfmathtruncatemacro{\oy}{ifthenelse(\v==1,\oy+\w*pow(2,\oby),\oy)}
+            \xdef\oy{\oy}
+            \pgfmathtruncatemacro{\obx}{ifthenelse(\v==0,\obx+1,\obx)}
+            \xdef\obx{\obx}
+            \pgfmathtruncatemacro{\oby}{ifthenelse(\v==1,\oby+1,\oby)}
+            \xdef\oby{\oby}
+        }
+
+        \pgfmathtruncatemacro{\nx}{0}
+        \pgfmathtruncatemacro{\ny}{0}
+        \pgfmathtruncatemacro{\nbx}{0}
+        \pgfmathtruncatemacro{\nby}{0}
+
+        \foreach \b in {0,1,2,3,4,5} {
+            \pgfmathtruncatemacro{\v}{\bits[\b]}
+            \pgfmathtruncatemacro{\w}{mod(\y / pow(2, \b), 2)}
+
+            \pgfmathtruncatemacro{\nx}{ifthenelse(\v==0,\nx+\w*pow(2,\nbx),\nx)}
+            \xdef\nx{\nx}
+            \pgfmathtruncatemacro{\ny}{ifthenelse(\v==1,\ny+\w*pow(2,\nby),\ny)}
+            \xdef\ny{\ny}
+            \pgfmathtruncatemacro{\nbx}{ifthenelse(\v==0,\nbx+1,\nbx)}
+            \xdef\nbx{\nbx}
+            \pgfmathtruncatemacro{\nby}{ifthenelse(\v==1,\nby+1,\nby)}
+            \xdef\nby{\nby}
+        }
+
+        \draw (p\ox\oy) -> (p\nx\ny);
+
+    }
+    \path (current bounding box.south west) +(-1mm,-1mm) (current bounding box.north east) +(1mm,1mm);
+\end{tikzpicture}
+\end{document}

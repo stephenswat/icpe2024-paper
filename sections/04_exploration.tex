@@ -1,0 +1,40 @@
+\section{Exploration Through Evolution}
+
+\label{sec:exploration}
+
+The canonical set of indexing bijections for laying out multi-di\-men\-sion\-al memory is small: for two-dimensional data, there are two possible layouts, and the performance of these layouts can be evaluated using exhaustive benchmarks~\cite{10.1145/3578244.3583723,10.1002/cpe.1018,814600}. Exhaustively exploring the family of indexing function outlined in \cref{sec:bijections}, however, is impractical owing to the sheer number of permissible permutations. Importantly, the number of canonical layouts increases only with the number of \emph{dimensions}, while the number of Morton-like layouts increases with both the number of dimensions and the \emph{size} of the array in each of those dimensions. By \cref{eq:permutation_set_size}, a small $4 \times 4$ array (indexed by two bits in each dimension) can be laid out in $\nicefrac{(2+2)!}{2!2!} = 6$ ways. A larger array of size $\num{4096} \times \num{4096}$ (twelve bits in each dimension) can be laid out in $\nicefrac{(12+12)!}{12!12!} = \num{2704156}$ ways. A three-dimensional array of size $256 \times 256 \times 256$ has the same number of elements as the aforementioned $\num{4096} \times \num{4096}$ array, but permits $\nicefrac{(8+8+8)!}{8!8!8!} = \num{9465511770}$ permutations. As these examples indicate, the number of possible permutations quickly scales beyond what can be feasibly explored through exhaustive search; in order to tackle the explosive growth in the design space for Morton-like layouts, we propose the use of genetic algorithms (\cref{sec:backgroun:genetic}).
+
+\subsection{Genetic Algorithm Configuration}
+In this work, we employ a relatively simple $(\lambda, \mu)$-ES genetic algorithm~\cite{holland1992adaptation,Slowik2020}. The chromosomal representations of array layouts is identical to the characterization given in \cref{sec:bijections:enumerating}, and this gives rise to a combinatorial optimization problem. We facilitate the recombination of array layouts into novel layouts using the ordered crossover (OX) operator~\cite{10.5555/1625135.1625164}, and we employ inversion-based mutation~\cite{Eiben2015}. Our approach differs from classical genetic algorithms in only one significant way: our initial population is not chosen randomly from the solution space. Instead, the initial populations for our evolutionary experiments always consist of two individuals, depicting two canonical layouts for a given array size, as described in \cref{sec:bijections:canonical}. We choose to do this to ensure that our initial populations are unbiased and deterministic, allowing us to more easily assess the efficacy of our genetic strategy.
+
+\subsection{Fitness Function Design}
+
+\label{sec:exploration:fitness}
+
+There are two general strategies for evaluating the performance i.e., fitness, of a given array layout under a given cache hierarchy and access pattern: measurement and simulation. In order to assess fitness through \textit{measurement}, we execute a program on actual hardware and measuring the running time of the process. Although such a fitness function is conceptually simple, it suffers from two primary flaws:
+\begin{enumerate*}
+    \item measurements are noisy and may suffer from run-to-run variance, which may hinder the performance of genetic algorithms~\cite{miller1995genetic}---in particular, our genetic algorithm is vulnerable to noise stemming from cache pollution effects; and
+    \item measurements require access to the target hardware, which may be inconvenient or even impossible---for example, in hardware-software co-design scenarios, where the hardware under consideration does not (yet) exist.
+\end{enumerate*}
+For these reasons, we choose not to base our fitness function on measurements. 
+
+Instead, we employ \emph{simulation} for which we need a simulator that can accurately compare the cache performance for different access-patterns on the same cache hierarchy. 
+For this, we selected \textsc{pycachesim}, a component of the \textsc{Kerncraft} toolkit~\cite{10.1007/978-3-319-56702-0_1}%\footnote{Although \textsc{pycachesim} is primarily a Python library, its core is written in the C programming language to maximize performance, and interact with \textsc{pycachesim} through the C interface for the same reason.}
+. We use \textsc{pycachesim} by simulating an access pattern such as matrix multiplication and registering the relevant trace of load and store operations. After all accesses have been recorded, we force a write-back of the caches and collect the number of hits and misses in each cache level. We combine the number of hits in every cache level as well as in main memory with the latency of retrieving data from each of these levels to compute the total number of cycles spent retrieving data from the cache hierarchy. Given an array layout $I$, an access pattern $A$ and a simulated cache hierarchy $H$, we calculate the total number of cycles using the following equation, in which $\mathrm{L}i_\mathrm{hit}$, $\mathrm{L}i_\mathrm{miss}$, and $\mathrm{L}i_\mathrm{lat}$ represent the number of hits, the number of misses, and the latency of the $i$th cache level%
+%\footnote{In this paper, we follow the ubiquitous convention that the cache closest to the core is named L1, but our software supports cache hierarchies of arbitrary depths and with arbitrary naming schemes.}
+, and $M$ represents main memory:
+
+\begin{equation}
+\label{eq:fitness-pre}
+    C(I; A, H) = \mathrm{M}_\mathrm{hit}(I; A, H)\mathrm{M}_\mathrm{lat}(H) + \sum_i \mathrm{L}i_\mathrm{hit}(I; A, H)\mathrm{L}i_\mathrm{lat}(H)
+\end{equation}
+
+From this, we compute an approximation of the number of accesses performed per cycle, giving rise to a higher-is-better fitness function defined as follows:
+
+\begin{equation}
+\label{eq:fitness}
+F(I; A, H) = \frac{\mathrm{L1}_\mathrm{hit}(I; A, H) + \mathrm{L1}_\mathrm{miss}(I; A, H)}{\mathrm{L1}_\mathrm{lat}(H)\cdot C(I; A, H)}
+\end{equation}
+
+Intuitively, the numerator in \cref{eq:fitness} counts the total number of memory accesses, as all accesses either hit or miss in L1. %the first-level cache. 
+The denominator, then, estimates the total number of cycles spent retrieving data from the various cache levels. The denominator is multiplied by a normalizing factor equal to the latency of the L1 cache; it follows from \cref{eq:fitness-pre} that the achievable performance is softly bound by the reciprocal of the L1 access latency. Indeed, this performance is achieved if and only if all accesses hit the L1 cache. Normalizing the fitness function using the L1 cache latency improves our ability to compare results between different cache hierarchies.

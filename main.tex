@@ -1,0 +1,87 @@
+\PassOptionsToPackage{prologue,dvipsnames}{xcolor}
+
+\documentclass[sigconf]{acmart}
+
+\usepackage{ifthen}
+\usepackage[american]{babel}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[position=b]{subcaption}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{listings}
+\usepackage{nicefrac}
+\usepackage[inline]{enumitem}
+\usepackage{siunitx}
+\usepackage{stmaryrd}
+\usepackage{threeparttable}
+\usepackage{multirow}
+\usepackage{lipsum}
+\usepackage{soul}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{doi}
+
+\creflabelformat{equation}{#2\textup{#1}#3}
+\crefname{lstfloat}{Listing}{Listings}
+\crefname{sublstfloat}{Listing}{Listings}
+
+\input{palette}
+\input{tikzcommon}
+
+\sisetup{detect-all}
+
+\lstdefinestyle{mystyle}{%
+    xrightmargin=5pt,%
+    xleftmargin=10pt,%
+    numberstyle=\tiny\color{gray},%
+    basicstyle=\textup\ttfamily\scriptsize,%
+    breakatwhitespace=false,%
+    breaklines=true,%
+    captionpos=b,%
+    keepspaces=true,%
+    numbers=left,%
+    numbersep=5pt,%
+    showspaces=false,%
+    showstringspaces=false,%
+    showtabs=false,%
+    tabsize=2%
+}
+
+\makeatletter
+\newcommand{\blind}[1]{%
+  \if@ACM@anonymous%
+    \hl{[redacted for review]}%
+  \else%
+    #1%
+  \fi%
+}
+\makeatother
+
+\newfloat{lstfloat}{t}{lop}
+\floatname{lstfloat}{Listing}
+\def\lstfloatautorefname{Listing}
+\DeclareCaptionSubType{lstfloat}
+
+% Table settings
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\curvesmall}[1]{\includegraphics{tmp_figures/layout_small_#1}}
+\newcommand{\curve}[1]{\includegraphics{tmp_figures/layout_large_#1}}
+
+% Tikz settings
+\input{tikzcommon}
+
+\begin{document}
+\input{sections/00_preamble}
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_indexing}
+\input{sections/04_exploration}
+\input{sections/06_results}
+\input{sections/07_limitations}
+\input{sections/08_conclusion}
+\input{sections/09_postamble}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{main}
+\end{document}

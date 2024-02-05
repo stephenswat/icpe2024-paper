@@ -1,0 +1,111 @@
+\section{Background and Related Work}
+
+\label{sec:background}
+
+In this section, we provide a brief overview of the basic concepts and notations which are essential to the remainder of this paper, and highlight relevant related work. 
+
+\subsection{Indexing Functions and Canonical Layouts}
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.48\columnwidth}
+        \centering
+        \curvesmall{0,0,1,1}\\
+        \begin{tikzpicture}[drawing layout small]
+            \foreach \x in {0,...,15} {
+                \ifnum\ifnum\x=0 1\else\ifnum\x=5 1\else\ifnum\x=10 1\else\ifnum\x=15 1\else0\fi\fi\fi\fi
+                =1 %
+                \node (p\x) at (\x,0) [fill=Palette1] {};
+                \else
+                \node (p\x) at (\x,0) {};
+                \fi
+            }
+
+            \foreach \x in {0,...,14} {
+                \pgfmathtruncatemacro{\nx}{\x+1}
+                \xdef\nx{\nx}
+                \draw (p\x) -> (p\nx);
+            }
+
+            \path [draw=none] (current bounding box.south west) +(-1mm,-1mm) (current bounding box.north east) +(1mm,6mm);
+            \draw[Palette1] (p0.north) to [out=20, in=160] (p5.north);
+            \draw[Palette1] (p5.north) to [out=20, in=160] (p10.north);
+            \draw[Palette1] (p10.north) to [out=20, in=160] (p15.north);
+        \end{tikzpicture}
+        \caption{Row-major layout}
+        \label{fig:locality_example:row_major}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.48\columnwidth}
+        \centering
+        \curvesmall{0,1,0,1}\\
+        \begin{tikzpicture}[drawing layout small]
+            \foreach \x in {0,...,15} {
+                \ifnum\ifnum\x=0 1\else\ifnum\x=3 1\else\ifnum\x=12 1\else\ifnum\x=15 1\else0\fi\fi\fi\fi
+                =1 %
+                \node (p\x) at (\x,0) [fill=Palette1] {};
+                \else
+                \node (p\x) at (\x,0) {};
+                \fi
+            }
+
+            \foreach \x in {0,...,14} {
+                \pgfmathtruncatemacro{\nx}{\x+1}
+                \xdef\nx{\nx}
+                \draw (p\x) -> (p\nx);
+            }
+
+            \path [draw=none] (current bounding box.south west) +(-1mm,-1mm) (current bounding box.north east) +(1mm,6mm);
+            \draw[Palette1] (p0.north) to [out=20, in=160] (p3.north);
+            \draw[Palette1] (p3.north) to [out=20, in=160] (p12.north);
+            \draw[Palette1] (p12.north) to [out=20, in=160] (p15.north);
+        \end{tikzpicture}
+        \caption{Morton layout}
+        \label{fig:locality_example:morton}
+    \end{subfigure}
+    \caption{Two-dimensional arrays laid out in memory along the gray arrows. An application accesses the array diagonally along the red arrows. Application locality is shown above, memory locality is shown below.}
+    \label{fig:locality_example}
+\end{figure}
+
+Dense $n$-dimensional arrays can be imagined as structured grids in which each element is assigned to exactly one point in $\mathbb{N}^n$. In most modern processors, multi-dimensional arrays are a software-level abstraction over the one-dimensional memory of the machine; in order to actually access multi-dimensional data, we need to define a function that converts indices in $n$ dimensions to memory addresses\footnote{In reality, address calculations must also consider array offsets (the address of the first element) and scales (the size of each element). We skip over these complications as they are handled transparently by address generation units in modern hardware, and they affect all array layouts in the same manner.}. We refer to the class of such functions as \emph{indexing functions}, and they are isomorphic to \emph{array layouts}. In short, an $n$-dimensional indexing functions is an injective (often bijective) function of the following type, where $N_i$ represents the size of the array in the $i$th dimension, $\bigtimes$ is the generalised Cartesian product, and $\llbracket a, b\rrbracket$ is the integer interval from $a$ to $b$:
+
+\begin{equation}
+f : \bigtimes_{i=0}^{n-1} \llbracket 0,N_i - 1 \rrbracket \to \left\llbracket0,\left(\prod_{i=0}^{n-1} N_i\right) - 1 \right\rrbracket
+\end{equation}
+
+In a multi-dimensional grid, we denote the elements along a given axis---that is to say, the sequence of elements for which all indices except one are fixed---as \emph{fibers}~\cite{doi:10.1137/07070111X}. In a two-dimensional case, fibers along the $x$-axis are known as \emph{rows}, and fibers along the $y$-axis as columns. In order to facilitate the description of arrays in three or more dimensions, we use the term \emph{mode}-$m$ fibers to describe fibers along the $m$th dimension, such that mode-0 fibers are synonymous with rows, mode-1 fibers refer to columns, and so forth.
+
+The most common group of multi-dimensional indexing functions are the \emph{canonical} layouts, sometimes known as the \emph{lexicographic} layouts or, in the two-dimensional case, the \emph{row-} and \emph{column-major} layouts. In a canonical layout, one-dimensional array indices are calculated according to \cref{eq:lexicographic}, in which $x_0, \ldots, x_{n-1}$ are components of the $n$-dimensional index, and $N_0, \ldots, N_{n-1}$ represent the size of the array in each dimension:
+
+\begin{equation}
+\label{eq:lexicographic}
+f(x_0, \ldots, x_{n-1}; N_0, \ldots, N_{n-1}) = \sum_{i=0}^{n-1}\left(\prod_{j=0}^{i-1}N_j\right)x_i
+\end{equation}
+
+An important corollary of \cref{eq:lexicographic} is that the mode-0 fibers are contiguous in memory i.e., \cref{eq:lexicographicconsec} holds:
+
+\begin{equation}
+\label{eq:lexicographicconsec}
+f(x_0 + 1, x_1, \ldots, x_{n-1}) = f(x_0, x_1, \ldots, x_{n-1}) + 1
+\end{equation}
+
+It is worth noting that the calculation of addresses in column-major layout---in which the mode-1 fibers are contiguous---is also given by \cref{eq:lexicographic}, with the order of the indices and sizes swapped. The canonical array layouts achieve perfect spatial locality in one dimension: if a kernel accesses memory along mode-$m$ fibers, then a canonical layout where the $m$th dimension is major will provide the optimal translation between locality in the multi-dimensional space to locality in memory. Many real world applications, however, exhibit locality in multiple dimensions; a kernel might, for example, iterate diagonally over an array; an example of this---and the resulting locality in memory---is given in \cref{fig:locality_example:row_major}.
+
+The performance of canonical storage layouts has been studied extensively.
+\citeauthor{1214317} discuss methods for compensating for the weaknesses of canonical layouts using tiling and recursive layouts~\cite{1214317}.
+Similarly, \citeauthor{kowarschik2003overview} propose a variety of strategies that mitigate cache misses in canconical storage layouts for numerical applications~\cite{kowarschik2003overview}.
+\citeauthor{1560002} propose a metric for the locality of array layouts~\cite{1560002}.
+\citeauthor{5473222} analyze the performance of access patterns in multi-dimensional data in graphics processing units (GPUs)~\cite{5473222}. \citeauthor{10.1145/2063384.2063401} propose a method for automatically optimizing storage layouts~\cite{10.1145/2063384.2063401}.
+
+\subsection{Morton Layouts}
+
+The Morton order is a notable example of a non-canonical array layout that provides balanced locality in multiple dimensions. It is conceptually simple to understand, efficient to implement in commodity hardware (as we will show in \cref{sec:bijections:accel}), and it has been shown to positively affect the efficacy of hardware caches: \citeauthor{doi:10.1177/1094342019846282} show the efficacy of the Morton layout in molecular dynamics applications~\cite{doi:10.1177/1094342019846282},  \citeauthor{9378385} describe its benefits in matrix decomposition~\cite{9378385}, and \citeauthor{10.1002/cpe.1018} provide an in-depth performance analysis of this array layout in a range of kernels~\cite{10.1002/cpe.1018}. \citeauthor{10.1145/305619.305645} show the applicability of Morton layouts---as well as other non-canonical layouts---in matrix multiplication~\cite{10.1145/305619.305645}, and this work is expanded upon in~\cite{10.1145/305138.305231}. Applications of the Morton order in more than two dimensions have been studied by \citeauthor{PAWLOWSKI201934}~\cite{PAWLOWSKI201934}. \citeauthor{Mellor-Crummey2001} show the applicability of array layouts based on space-filling curves---like the Morton layout---for irregular applications~\cite{Mellor-Crummey2001}. The practical applicability of the Morton layout is further evidenced by the \textsc{Opie} compiler, which employs Morton array layouts natively~\cite{10.1145/1054943.1054962}.
+
+The performance benefits of the Morton layout stem from its spatial structure: an example---which justifies why this layout is sometimes known as the \emph{Z-order layout}---is given in \cref{fig:locality_example:morton}; note the difference in locality in the address space compared to the canonical layout (\cref{fig:locality_example:row_major}). The Morton order layout has also been applied to data movement in parallel systems by \citeauthor{walker2023impact}~\cite{walker2023impact}, and \citeauthor{6687350} have applied the layout to workload distribution in parallel processes~\cite{6687350}. \citeauthor{bader2012space} explores a variety of applications of space-filling curves in scientific programs~\cite{bader2012space}. \citeauthor{10.14778/3415478.3415560} explore the application of Morton curves for the storage of databases, reducing the total amount of data read from persistent storage~\cite{10.14778/3415478.3415560}; although the aforementioned paper considers a much higher level of abstraction than the methods in this paper---which operate at the level of hardware caches---we believe that the methods presented in this paper may generalize to a broader range of applications, including databases.
+
+In the Morton order, multi-dimensional indices can be converted to one-dimensional addresses in a variety of ways. The Moser--de Bruijn sequence~\cite{mosedebruijn} is commonly used as it allows efficient conversions in two dimensions, but this method requires us to store the Moser--de Bruijn sequence in memory, and accessing this sequence causes additional overhead. Therefore, we prefer a different method based on the interleaving of the (unsigned) binary representation of multi-dimensional indices. As an example, the two-dimensional index $(3, 5)$ can be bijectively mapped into one-dimensional memory by finding the binary expansions of the indices i.e., $({\color{Palette1}011}_2, {\color{Palette2}101}_2)$, and interleaving the bits yielding ${\color{Palette2}1}{\color{Palette1}0}{\color{Palette2}0}{\color{Palette1}1}{\color{Palette2}1}{\color{Palette1}1}_2 = 39_{10}$.  This is equivalent to first dilating and shifting the binary expansions of the numbers, and then taking their bitwise disjunction (OR): the first index is dilated yielding ${\color{gray}0}{\color{Palette1}0}{\color{gray}0}{\color{Palette1}1}{\color{gray}0}{\color{Palette1}1}_2$ while the second index is dilated and shifted left yielding ${\color{Palette2}1}{\color{gray}0}{\color{Palette2}0}{\color{gray}0}{\color{Palette2}1}{\color{gray}0}_2$. Taking the bitwise disjunction of these numbers yields the same address as using the interleaving strategy. The computation of Morton indices through bit manipulation can be extended to an arbitrary number of dimensions; the three-dimensional index $(3, 5, 4)$ expands to $({\color{Palette1}011}_2, {\color{Palette2}101}_2, {\color{Palette3}100}_2)$, and the resulting memory address is ${\color{Palette3}1}{\color{Palette2}1}{\color{Palette1}0}{\color{Palette3}0}{\color{Palette2}0}{\color{Palette1}1}{\color{Palette3}0}{\color{Palette2}1}{\color{Palette1}1}_2 = 395_{10}$. Note that the relative significance of bits in each of the input indices is preserved in the output address. \citeauthor{10.1145/1274971.1274989} present the idea that the Morton layout can be generalized by allowing arbitrary bit-interleaving orders~\cite{10.1145/1274971.1274989,doi:10.1080/17445760902758560}, which is foundational to our work. This idea is further expanded on by \citeauthor{doi:10.1177/1094342017725568}~\cite{doi:10.1177/1094342017725568}.
+
+\subsection{Genetic Algorithms}
+
+\label{sec:backgroun:genetic}
+
+Genetic algorithms are a class of heuristics introduced by \citeauthor{holland1992adaptation} which are designed to solve optimization and search problems by emulating the process of evolution as it happens in the natural world~\cite{holland1992adaptation}. In genetic algorithms, \emph{generations} of \emph{individuals} i.e., sets of candidate solutions, iteratively explore a design space through genetic operators. In particular, \emph{crossover} operators model the combination of the genetic material of two or more individuals~\cite{10.1145/3009966}, and \emph{mutation} operators model random changes to the gene pool~\cite{294849}. In genetic algorithms, individuals are removed from the population based on their \emph{fitness} i.e., the quality of the solution they represent to the problem posed~\cite{Sivanandam2008}. Genetic algorithms have seen successful application in an extremely broad range of fields, ranging from drug discovery~\cite{TERFLOTH2001102} to music composition~\cite{doi:10.1080/0749446032000150870}. Genetic algorithms have also proven useful for design space exploration in computer systems; \citeauthor{7738470} shows that they can be applied in the design of embedded systems~\cite{7738470}. \citeauthor{10.1007/978-3-030-55789-8_61} show that a broader class of evolutionary approaches can be used in the design of neural networks~\cite{10.1007/978-3-030-55789-8_61}. The optimization problem we consider in this paper is combinatorial in nature, and the application of genetic algorithms to such problems has also been extensively studied and proven across a variety of domains~\cite{doi:10.1287/ijoc.6.2.161,10.1007/3-540-55027-5_23,hegerty2009comparative,Goncalves2011}

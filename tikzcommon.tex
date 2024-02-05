@@ -1,0 +1,40 @@
+\usepackage{tikz}
+\usepackage{ifthen}
+
+\usetikzlibrary{decorations.pathmorphing,decorations.pathreplacing,calligraphy}
+\usetikzlibrary{shapes,shapes.misc,arrows,positioning,calc,arrows.meta}
+
+\tikzset{snake it/.style={decorate, decoration={snake, segment length=3mm, amplitude=0.5mm}}}
+
+\tikzset{drawing layout large/.style={%
+    y=-2.5mm,%
+    x=2.5mm,%
+    every node/.style={%
+        circle, fill=black, scale=0.25%
+    },%
+    every path/.style={%
+        gray, thick, shorten >=0.25mm, shorten <=0.25mm, -{Stealth[width=4pt,length=3pt]}
+    }%
+}}
+
+\tikzset{drawing layout/.style={%
+    y=-5mm,
+    x=5mm,
+    every node/.style={%
+        circle, fill=black, scale=0.25
+    },
+    every path/.style={%
+        gray, thick, shorten >=0.7mm, shorten <=0.7mm, -{Stealth[width=4pt,length=3pt]}
+    }
+}}
+
+\tikzset{drawing layout small/.style={%
+    y=-5mm,
+    x=2.5mm,
+    every node/.style={%
+        circle, fill=black, scale=0.25
+    },
+    every path/.style={%
+        gray, thick, shorten >=0.2mm, shorten <=0.2mm, -{Stealth[width=4pt,length=3pt]}
+    }
+}}
