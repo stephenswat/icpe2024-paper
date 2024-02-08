@@ -78,6 +78,25 @@
 
 \keywords{Morton curve, Z-order curve, space-filling curves, array layout, multi-dimensional data, evolutionary algorithms, caching, locality}
 
+\makeatletter
+\gdef\@copyrightpermission{
+  \begin{minipage}{0.3\columnwidth}
+   \href{https://creativecommons.org/licenses/by/4.0/}{\includegraphics[width=0.90\textwidth]{images/4ACM-CC-by-88x31.eps}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.7\columnwidth}
+   \href{https://creativecommons.org/licenses/by/4.0/}{This work is licensed under a Creative Commons Attribution International 4.0 License.}
+  \end{minipage}
+  \vspace{5pt}
+}
+\makeatother
+
+\copyrightyear{2024}
+\acmYear{2024}
+\setcopyright{rightsretained}
+\acmConference[ICPE '24]{Proceedings of the 15th ACM/SPEC International Conference on Performance Engineering}{May 7--11, 2024}{London, United Kingdom}
+\acmBooktitle{Proceedings of the 15th ACM/SPEC International Conference on Performance Engineering (ICPE '24), May 7--11, 2024, London, United Kingdom}\acmDOI{10.1145/3629526.3645034}
+\acmISBN{979-8-4007-0444-4/24/05}
+
 \begin{abstract}
 The layout of multi-dimensional data can have a significant impact on the efficacy of hardware caches and, by extension, the performance of applications. Common multi-dimensional layouts include the canonical row-major and column-major layouts as well as the Morton curve layout. In this paper, we describe how the Morton layout can be generalized to a very large family of multi-dimensional data layouts with widely varying performance characteristics. We posit that this design space can be efficiently explored using a combinatorial evolutionary methodology based on genetic algorithms. To this end, we propose a chromosomal representation for such layouts as well as a methodology for estimating the fitness of array layouts using cache simulation. We show that our fitness function correlates to kernel running time in real hardware, and that our evolutionary strategy allows us to find candidates with favorable simulated cache properties in four out of the eight real-world applications under consideration in a small number of generations. Finally, we demonstrate that the array layouts found using our evolutionary method perform well not only in simulated environments but that they can effect significant performance gains---up to a factor ten in extreme cases---in real hardware.
 \end{abstract}
